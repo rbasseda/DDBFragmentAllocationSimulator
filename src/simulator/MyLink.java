@@ -73,7 +73,7 @@ public class MyLink{
       }
       else{
         return(false);
-      };
+      }
     }
   public void Notify(int cl){
     clock=cl;
