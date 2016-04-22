@@ -20,14 +20,14 @@ public class MyNode {
   private Queue TempQ;
   private  int MaxLinks,RPCount,PGenCount;
   private  float AvgDelay;
-  private  coordinator Mnger;
+  private  Coordinator Mnger;
   private  DataAlloc MyDA;
   private  int clock;
   private  PacketGenerator PG[]=new PacketGenerator[10];
   private  PacketGenerator TempPG;
   private  rtTable MyRTTable;
   private  int RouteType;
-  public MyNode(char N,coordinator Manager){
+  public MyNode(char N,Coordinator Manager){
     Name=N;
     AvgDelay=0;
     RPCount=0;
@@ -46,7 +46,7 @@ public class MyNode {
     RouteType=0;
     MyDA=new DataAlloc(this,'N');
   }
-  public MyNode(char N,coordinator Manager, int RouteT){
+  public MyNode(char N,Coordinator Manager, int RouteT){
     Name=N;
     AvgDelay=0;
     RPCount=0;
@@ -57,7 +57,7 @@ public class MyNode {
     PGenCount=0;
     MyDA=new DataAlloc(this,'N');
   }
-  public MyNode(char N,coordinator Manager, int RouteT,char AllType){
+  public MyNode(char N,Coordinator Manager, int RouteT,char AllType){
     Name=N;
     AvgDelay=0;
     RPCount=0;
@@ -69,24 +69,24 @@ public class MyNode {
     MyDA=new DataAlloc(this,AllType);
   }
 
-  public void SetParam(char N,coordinator Manager){
+  public void SetParam(char N,Coordinator Manager){
     Name=N;
     Mnger=Manager;
     MyRTTable=new rtTable(Mnger,Name);
   }
-  public void SetParam(char N,coordinator Manager,int RouteT){
+  public void SetParam(char N,Coordinator Manager,int RouteT){
     Name=N;
     Mnger=Manager;
     RouteType=RouteT;
     MyRTTable=new rtTable(Mnger,Name);
 
   }
-  public void SetParam(char N,coordinator Manager,int RouteT,char AllT){
+  public void SetParam(char N,Coordinator Manager,int RouteT,char AllT){
     Name=N;
     Mnger=Manager;
     RouteType=RouteT;
     MyRTTable=new rtTable(Mnger,Name);
-    MyDA.SetAllType(AllT);
+    MyDA.setAllType(AllT);
 
   }
 
@@ -97,7 +97,7 @@ public class MyNode {
     qq[(MaxLinks-1)]=TempQ;
   }
   public char GetDataLoc(int DI){
-    return(Mnger.GetDataItemLoc(DI));
+    return(Mnger.getDataItemLoc(DI));
   }
   public void MoveDataLoc(int DI,char N){
     Mnger.moveDataItem(DI,N);
@@ -107,7 +107,7 @@ public class MyNode {
   public void Get(pack p){
     //System.out.println("Recieved Pack by "+Name+" for "+p.GetS()+" "+p.GetD());
     if(p.GetD()==Name){
-      clock=Mnger.GetClock();
+      clock=Mnger.getClock();
       ++RPCount;
       switch(p.getType()){
         case 'Q':
@@ -117,8 +117,8 @@ public class MyNode {
             char tdest;
             tdest=p.GetD();
             RoutedQ=Route(tdest);
-            RoutedQ.Get(p,clock);
-            MyDA.Hint(p.GetD(),p.GetDataItem());
+            RoutedQ.getPackage(p,clock);
+            MyDA.hint(p.GetD(),p.GetDataItem());
             break;
         case 'A':
             --RPCount;
@@ -142,7 +142,7 @@ public class MyNode {
       char tdest;
       tdest=p.GetD();
       RoutedQ=Route(tdest);
-      RoutedQ.Get(p,clock);
+      RoutedQ.getPackage(p,clock);
       };
 
   }
@@ -197,19 +197,19 @@ public class MyNode {
     return(true);
   }
   public int GetMyClock(){
-    return(Mnger.GetClock());
+    return(Mnger.getClock());
   }
   public void Notify(int cl){
     int count=0;
     for(count=0;count<MaxLinks;++count)
       try{
-        qq[count].Notify(cl);
+        qq[count].notify(cl);
       }catch(RuntimeException r){
         //System.out.print("Queue Generation Error"+r+Integer.toString(count).toCharArray() +"\n" ) ;
       }
     for(count=0;count<PGenCount;++count)
     try{
-        PG[count].Notify(cl);
+        PG[count].notify(cl);
       }catch(RuntimeException r){
         //System.out.print("PacketGenerator Generation Error"+r+" "+Name+"  "+Integer.toString(count).toCharArray()+" "+Integer.toString(cl).toCharArray()+"\n") ;
       }
@@ -222,56 +222,56 @@ public class MyNode {
     float AvgQL=0;
     char otherSide='x';
     for(count=0;count<MaxLinks;++count){
-      otherSide=LL[count].GetOtherHead(Name);
+      otherSide=LL[count].getOtherHead(Name);
 //      dropCnt=qq[count]
     };
     return(retVal);
   }
 
 private class PacketGenerator{
-  int startClock,finishClock,Rate,plength;
+  int startClock,finishClock,rate,plength;
   MyNode owner;
   char dest;
   boolean status;
   pack recent;
-  int FID,SN;
+  int flowID,serialN;
   int cdcounter;
   public PacketGenerator(MyNode O,int ST, int FT, int R,char D, int L,int FlowID){
     owner=O;
     startClock=ST;
     finishClock=FT;
-    Rate=R;
+    rate=R;
     dest=D;
     status=false;
     plength=L;
-    FID=FlowID;
-    SN=0;
+    flowID=FlowID;
+    serialN=0;
     cdcounter=0;
   }
-  public void Notify(int cl){
+  public void notify(int cl){
     if(startClock<=cl&&cl<finishClock)status=true;
     else status=false;
     if(status==true){
 //      System.out.println("Packet Generated"+owner.Name+" "+Integer.toString(SN));
       if(cdcounter==0){
-        Generate(cl);
-        cdcounter=Rate;
+        generate(cl);
+        cdcounter=rate;
         }else cdcounter--;
     };
 
 
   }
-  private void Generate(int cl){
+  private void generate(int cl){
     int clock;
     int DI;
-    Random MyRand=new Random();
-    DI=(int)(MyRand.nextFloat()*10);
+    Random myRand=new Random();
+    DI=(int)(myRand.nextFloat()*10);
     clock=cl;
     //DI();
     if(owner.GetDataLoc(DI)!=owner.Name){
-        recent=new pack(clock,owner.GetDataLoc(DI),owner.Name,plength,FID,SN,true,'Q',DI);
+        recent=new pack(clock,owner.GetDataLoc(DI),owner.Name,plength,flowID,serialN,true,'Q',DI);
         owner.Get(recent);
-        SN++;
+        serialN++;
       }
     //System.out.print("Generated packet at "+Integer.toString(clock)+" in "+owner.Name);
     //System.out.println(" FID:"+Integer.toString(FID)+" SN:"+Integer.toString(SN));
@@ -284,9 +284,9 @@ private class Queue{
   pack pps[]=new pack[20];
   int length;
   int dropCount;
-  public Queue(MyLink l,MyNode O){
+  public Queue(MyLink l,MyNode o){
     ll=l;
-    owner=O;
+    owner=o;
     length=0;
     dropCount=0;
   }
@@ -295,9 +295,9 @@ private class Queue{
     dropCount=0;
   }
   public char GetDest(){
-    return(ll.GetOtherHead(owner.Name));
+    return(ll.getOtherHead(owner.Name));
   }
-  public void Get(pack ppp,int cl){
+  public void getPackage(pack ppp,int cl){
     //System.out.println("Enqueued Packet in "+owner.Name+" for "+ppp.GetS()+" to "+ppp.GetD());
     ppp.SetEnqueueTS(cl);
     if(length>19){
@@ -310,10 +310,10 @@ private class Queue{
         length++;
       };
   }
-  public void Notify(int cl){
+  public void notify(int cl){
     int count=0;
     if(length>0){
-      if(ll.Get(pps[0],owner)==true){
+      if(ll.getPackage(pps[0],owner)==true){
         //System.out.println("Dequeued Packet in "+owner.Name+" for "+pps[0].GetS()+" to "+pps[0].GetD());
         --length;
         for(count=0;count<19;++count)
@@ -321,7 +321,7 @@ private class Queue{
           };
       };
   }
-  public int GetDropCount(){
+  public int getDropCount(){
     return(dropCount);
   }
 
@@ -337,15 +337,15 @@ private class Queue{
   int NCount=0;
   int MyIndex;
   char MyName;
-  coordinator Mng;
+  Coordinator Mng;
   int RouteStyle;
-  public rtTable(coordinator coor,char Owner,int RouteT){
+  public rtTable(Coordinator coor,char Owner,int RouteT){
     Mng=coor;
     MyName=Owner;
     RouteStyle=RouteT;
     initTable();
   }
-  public rtTable(coordinator coor,char Owner){
+  public rtTable(Coordinator coor,char Owner){
     Mng=coor;
     MyName=Owner;
     RouteStyle=0;
@@ -370,9 +370,9 @@ private class Queue{
     }
   private void initTable(){
     int count=0;
-    NCount=Mng.GetMaxNodeCount();
+    NCount=Mng.getMaxNodeCount();
     for(count=0;count<NCount;count++){
-      key[count]=Mng.GetNodeName(count);
+      key[count]=Mng.getNodeName(count);
       if(key[count]==MyName)MyIndex=count;
       };
 
@@ -383,7 +383,7 @@ private class Queue{
     int distances[]=new int [10];
     int lessC,lessI;
     for(count=0;count<NCount;++count)
-      if(Mng.GetNodeName(count)==MyName)MyIndex=count;
+      if(Mng.getNodeName(count)==MyName)MyIndex=count;
 
     for(count=0;count<10;++count){
       accessed[count]=false;
@@ -397,8 +397,8 @@ private class Queue{
     recent=MyIndex;
     do{
         for(count=0;count<NCount;++count){
-          if(cost[count]>(cost[recent]+Mng.GetLinkCost(recent,count))){
-            cost[count]=cost[recent]+Mng.GetLinkCost(recent,count);
+          if(cost[count]>(cost[recent]+Mng.getLinkCost(recent,count))){
+            cost[count]=cost[recent]+Mng.getLinkCost(recent,count);
             if(recent==MyIndex)nextNode[count]=key[count];
             else nextNode[count]=nextNode[recent];
             };

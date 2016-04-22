@@ -107,19 +107,19 @@ public class RoutingUI extends JFrame {
     char AT='N';
     if(jRadioJ2Dest.isSelected()==true)AT='N';
     if(jRadioJ2Next.isSelected()==true)AT='R';
-    coordinator coord=new coordinator(Integer.valueOf(jTextFieldSimL.getText()).intValue(),0,AT);
+    Coordinator coord=new Coordinator(Integer.valueOf(jTextFieldSimL.getText()).intValue(),0,AT);
 //    coordinator coord=new coordinator(100000);
-    coord.RunCoord(this);
-    LinkCount=coord.GetMaxLinks();
+    coord.runCoord(this);
+    LinkCount=coord.getMaxLinks();
     for(count=0;count<10;++count)
-      Out.append("\n"+coord.NodeStatus(count));
+      Out.append("\n"+coord.nodeStatus(count));
     jTextAreaOut.setText(Out.toString());
     for(count=0;count<LinkCount;++count)
       OutLink.append("\n"+coord.LinkStatus(count));
     for(count=0;count<10;++count)
-      OutLink.append("\n DataItem "+Integer.toString(count)+" Located "+coord.GetDataItemLoc(count));
+      OutLink.append("\n DataItem "+Integer.toString(count)+" Located "+coord.getDataItemLoc(count));
     jTextAreaOutLink.setText(OutLink.toString());
-    OutAll.append(coord.GetOverAllRep().toString());
+    OutAll.append(coord.getOverAllRep().toString());
     jTextAreaOutAll.setText(OutAll.toString() );
 
 

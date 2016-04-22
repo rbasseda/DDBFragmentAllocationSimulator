@@ -27,13 +27,13 @@ package simulator;
         PType='Q';
         DataItem=0;
       }
-      public pack(int cl,char D,char S, int L, int FlowID,int SNumber){
+      public pack(int cl,char D,char S, int L, int flowID,int sNumber){
         length=L;
         source=S;
         dest=D;
         SendTS=cl;
-        FID=FlowID;
-        SN=SNumber;
+        FID=flowID;
+        SN=sNumber;
         PType='Q';
         DataItem=0;
       }

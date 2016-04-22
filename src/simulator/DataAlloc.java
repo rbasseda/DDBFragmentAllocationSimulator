@@ -10,27 +10,27 @@ package simulator;
  */
 
 public class DataAlloc {
-  private MyNode Owner;
-  private char AllocType;
-  private int DCounter[][]=new int[10][100];
+  private MyNode owner;
+  private char allocType;
+  private int dCounter[][]=new int[10][100];
   public DataAlloc(MyNode O,char allT) {
     int i;
     int j;
-    Owner=O;
-    AllocType=allT;
+    owner=O;
+    allocType=allT;
     for(i=0;i<10;++i)
-      for(j=0;j<100;++j)DCounter[i][j]=0;
+      for(j=0;j<100;++j)dCounter[i][j]=0;
   }
-  public void SetAllType(char AT){
-    AllocType=AT;
+  public void setAllType(char AT){
+    allocType=AT;
   }
-  public void Hint(char D, int DI){
+  public void hint(char D, int DI){
     int i=0;
     int j=0;
     int zero=0;
     int Commolative=0;
     char NextN='Z';
-    switch(AllocType){  //Normal Allocation
+    switch(allocType){  //Normal Allocation
       case 'N':
         if(D=='A')i=0;
         if(D=='B')i=1;
@@ -41,16 +41,16 @@ public class DataAlloc {
         if(D=='G')i=6;
         if(D=='H')i=7;
         if(D=='I')i=8;
-        DCounter[DI][i]++;
-        if(DCounter[DI][i]>10){
-          Owner.MoveDataLoc(DI,D);
-          System.out.print(" Time: "+Integer.toString(Owner.GetMyClock()));
-          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+Owner.Name+" to "+D+"\n");
-          DCounter[DI][i]=0;
+        dCounter[DI][i]++;
+        if(dCounter[DI][i]>10){
+          owner.MoveDataLoc(DI,D);
+          System.out.print(" Time: "+Integer.toString(owner.GetMyClock()));
+          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+owner.Name+" to "+D+"\n");
+          dCounter[DI][i]=0;
           }
         break;
         case 'R':
-        NextN=Owner.GetNextNodeInRoute(D);
+        NextN=owner.GetNextNodeInRoute(D);
         if(NextN=='A')i=0;
         if(NextN=='B')i=1;
         if(NextN=='C')i=2;
@@ -60,17 +60,17 @@ public class DataAlloc {
         if(NextN=='G')i=6;
         if(NextN=='H')i=7;
         if(NextN=='I')i=8;
-        DCounter[DI][i]++;
+        dCounter[DI][i]++;
         for(j=0;j<100;++j){
-          Commolative+=DCounter[DI][j];
-          if(DCounter[DI][j]==0)zero++;
+          Commolative+=dCounter[DI][j];
+          if(dCounter[DI][j]==0)zero++;
           }
-        if(DCounter[DI][i]>5){
+        if(dCounter[DI][i]>5){
         //if(DCounter[DI][i]>(2*(Commolative/(100-zero)))&&DCounter[DI][i]>10){
-          Owner.MoveDataLoc(DI,NextN);
-          System.out.print(" Time: "+Integer.toString(Owner.GetMyClock()));
-          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+Owner.Name+" to "+NextN+"\n");
-          DCounter[DI][i]=0;
+          owner.MoveDataLoc(DI,NextN);
+          System.out.print(" Time: "+Integer.toString(owner.GetMyClock()));
+          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+owner.Name+" to "+NextN+"\n");
+          dCounter[DI][i]=0;
           }
         break;
 
