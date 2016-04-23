@@ -104,22 +104,24 @@ public class RoutingUI extends JFrame {
     int count=0;
     int LinkCount;
     int RType=0;
-    char AT='N';
-    if(jRadioJ2Dest.isSelected()==true)AT='N';
-    if(jRadioJ2Next.isSelected()==true)AT='R';
-    Coordinator coord=new Coordinator(Integer.valueOf(jTextFieldSimL.getText()).intValue(),0,AT);
+    char allocationType='N';
+    if(jRadioJ2Dest.isSelected()==true)allocationType='N';
+    if(jRadioJ2Next.isSelected()==true)allocationType='R';
+    Coordinator.getInstance().setSimLength(Integer.valueOf(jTextFieldSimL.getText()).intValue());
+    Coordinator.getInstance().setRouteType(0);
+    Coordinator.getInstance().setAllocT(allocationType);
 //    coordinator coord=new coordinator(100000);
-    coord.runCoord(this);
-    LinkCount=coord.getMaxLinks();
+    Coordinator.getInstance().runCoord(this);
+    LinkCount=Coordinator.getInstance().getMaxLinks();
     for(count=0;count<10;++count)
-      Out.append("\n"+coord.nodeStatus(count));
+      Out.append("\n"+Coordinator.getInstance().nodeStatus(count));
     jTextAreaOut.setText(Out.toString());
     for(count=0;count<LinkCount;++count)
-      OutLink.append("\n"+coord.LinkStatus(count));
+      OutLink.append("\n"+Coordinator.getInstance().LinkStatus(count));
     for(count=0;count<10;++count)
-      OutLink.append("\n DataItem "+Integer.toString(count)+" Located "+coord.getDataItemLoc(count));
+      OutLink.append("\n DataItem "+Integer.toString(count)+" Located "+Coordinator.getInstance().getDataItemLoc(count));
     jTextAreaOutLink.setText(OutLink.toString());
-    OutAll.append(coord.getOverAllRep().toString());
+    OutAll.append(Coordinator.getInstance().getOverAllRep().toString());
     jTextAreaOutAll.setText(OutAll.toString() );
 
 

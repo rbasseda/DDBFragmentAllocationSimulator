@@ -13,120 +13,103 @@ import java.util.*;
  */
 
 public class MyNode {
-  public char Name;
-  private MyLink LL[]=new MyLink[9];
-  private MyLink TempL;
-  private Queue qq[]=new Queue[9];
-  private Queue TempQ;
-  private  int MaxLinks,RPCount,PGenCount;
-  private  float AvgDelay;
-  private  Coordinator Mnger;
-  private  DataAlloc MyDA;
+  public char name;
+  private MyLink links[]=new MyLink[9];
+  private MyLink tempLink;
+  private PacketsQueue qq[]=new PacketsQueue[9];
+  private PacketsQueue tempQueue;
+  private  int maxLinks,recievedPacketsCount,packetGeneratorCount;
+  private  float avgDelay;
+  private  DataAlloc myDataAllocator;
   private  int clock;
-  private  PacketGenerator PG[]=new PacketGenerator[10];
-  private  PacketGenerator TempPG;
-  private  rtTable MyRTTable;
-  private  int RouteType;
-  public MyNode(char N,Coordinator Manager){
-    Name=N;
-    AvgDelay=0;
-    RPCount=0;
-    Mnger=Manager;
-    MyRTTable=new rtTable(Mnger,Name);
-    MaxLinks=0;
-    PGenCount=0;
-    RouteType=0;
-    MyDA=new DataAlloc(this,'N');
+  private  PacketGenerator myPacketGenerator[]=new PacketGenerator[10];
+  private  PacketGenerator tempPacketGenerator;
+  private  rtTable myRoutingTable;
+  private  int routeType;
+  public MyNode(char N){
+    name=N;
+    avgDelay=0;
+    recievedPacketsCount=0;
+    myRoutingTable=new rtTable(name);
+    maxLinks=0;
+    packetGeneratorCount=0;
+    routeType=0;
+    myDataAllocator=new DataAlloc(this,'N');
   }
   public MyNode(){
-    AvgDelay=0;
-    RPCount=0;
-    MaxLinks=0;
-    PGenCount=0;
-    RouteType=0;
-    MyDA=new DataAlloc(this,'N');
+    avgDelay=0;
+    recievedPacketsCount=0;
+    maxLinks=0;
+    packetGeneratorCount=0;
+    routeType=0;
+    myDataAllocator=new DataAlloc(this,'N');
   }
-  public MyNode(char N,Coordinator Manager, int RouteT){
-    Name=N;
-    AvgDelay=0;
-    RPCount=0;
-    Mnger=Manager;
-    RouteType=RouteT;
-    MyRTTable=new rtTable(Mnger,Name);
-    MaxLinks=0;
-    PGenCount=0;
-    MyDA=new DataAlloc(this,'N');
+  public MyNode(char N, int RouteT){
+    name=N;
+    avgDelay=0;
+    recievedPacketsCount=0;
+    routeType=RouteT;
+    myRoutingTable=new rtTable(name);
+    maxLinks=0;
+    packetGeneratorCount=0;
+    myDataAllocator=new DataAlloc(this,'N');
   }
-  public MyNode(char N,Coordinator Manager, int RouteT,char AllType){
-    Name=N;
-    AvgDelay=0;
-    RPCount=0;
-    Mnger=Manager;
-    RouteType=RouteT;
-    MyRTTable=new rtTable(Mnger,Name);
-    MaxLinks=0;
-    PGenCount=0;
-    MyDA=new DataAlloc(this,AllType);
+  public MyNode(char N,int RouteT,char AllType){
+    name=N;
+    avgDelay=0;
+    recievedPacketsCount=0;
+    routeType=RouteT;
+    myRoutingTable=new rtTable(name);
+    maxLinks=0;
+    packetGeneratorCount=0;
+    myDataAllocator=new DataAlloc(this,AllType);
   }
 
-  public void SetParam(char N,Coordinator Manager){
-    Name=N;
-    Mnger=Manager;
-    MyRTTable=new rtTable(Mnger,Name);
-  }
-  public void SetParam(char N,Coordinator Manager,int RouteT){
-    Name=N;
-    Mnger=Manager;
-    RouteType=RouteT;
-    MyRTTable=new rtTable(Mnger,Name);
+  public void setParam(char N,int RouteT,char AllT){
+	    name=N;
+	    routeType=RouteT;
+	    myRoutingTable=new rtTable(name);
+	    myDataAllocator.setAllType(AllT);
 
-  }
-  public void SetParam(char N,Coordinator Manager,int RouteT,char AllT){
-    Name=N;
-    Mnger=Manager;
-    RouteType=RouteT;
-    MyRTTable=new rtTable(Mnger,Name);
-    MyDA.setAllType(AllT);
-
-  }
+	  }
 
   public void AddLink(MyLink al){
-    LL[MaxLinks]=al;
-    MaxLinks++;
-    TempQ=new Queue(LL[(MaxLinks-1)],this);
-    qq[(MaxLinks-1)]=TempQ;
+    links[maxLinks]=al;
+    maxLinks++;
+    tempQueue=new PacketsQueue(links[(maxLinks-1)],this);
+    qq[(maxLinks-1)]=tempQueue;
   }
-  public char GetDataLoc(int DI){
-    return(Mnger.getDataItemLoc(DI));
+  public char getDataLocation(int dataItem){
+    return(Coordinator.getInstance().getDataItemLoc(dataItem));
   }
-  public void MoveDataLoc(int DI,char N){
-    Mnger.moveDataItem(DI,N);
+  public void moveDataLocation(int dataItem,char destinationNode){
+	  Coordinator.getInstance().moveDataItem(dataItem,destinationNode);
   }
 
 
-  public void Get(pack p){
+  public void recievePacket(Packet p){
     //System.out.println("Recieved Pack by "+Name+" for "+p.GetS()+" "+p.GetD());
-    if(p.GetD()==Name){
-      clock=Mnger.getClock();
-      ++RPCount;
+    if(p.getDest()==name){
+      clock=Coordinator.getInstance().getClock();
+      ++recievedPacketsCount;
       switch(p.getType()){
         case 'Q':
-            --RPCount;
+            --recievedPacketsCount;
             p.replyQueryPack();
-            Queue RoutedQ;//=new Queue();
+            PacketsQueue RoutedQ;//=new Queue();
             char tdest;
-            tdest=p.GetD();
-            RoutedQ=Route(tdest);
+            tdest=p.getDest();
+            RoutedQ=route(tdest);
             RoutedQ.getPackage(p,clock);
-            MyDA.hint(p.GetD(),p.GetDataItem());
+            myDataAllocator.hint(p.getDest(),p.getDataItem());
             break;
         case 'A':
-            --RPCount;
-            AvgDelay=(AvgDelay*RPCount+p.CalcDelay(clock))/(RPCount+1);
-            ++RPCount;
+            --recievedPacketsCount;
+            avgDelay=(avgDelay*recievedPacketsCount+p.calculateDelay(clock))/(recievedPacketsCount+1);
+            ++recievedPacketsCount;
             break;
         case 'D':
-            Mnger.moveDataItemCommit(p.GetDataItem(),p.GetD(),p.CalcDelay(clock));
+        	Coordinator.getInstance().moveDataItemCommit(p.getDataItem(),p.getDest(),p.calculateDelay(clock));
             break;
         default:
             System.out.print("\n Unknown Reciepant of Packet ");
@@ -138,28 +121,28 @@ public class MyNode {
       }
     else
       {
-      Queue RoutedQ;//=new Queue();
+      PacketsQueue RoutedQ;//=new Queue();
       char tdest;
-      tdest=p.GetD();
-      RoutedQ=Route(tdest);
+      tdest=p.getDest();
+      RoutedQ=route(tdest);
       RoutedQ.getPackage(p,clock);
       };
 
   }
-  public float GetAvgDelay(){
-    return(AvgDelay);
+  public float getAvgDelay(){
+    return(avgDelay);
   }
-  public int GetRecievedPackCount(){
-    return(RPCount);
+  public int getRecievedPackCount(){
+    return(recievedPacketsCount);
   }
-  private Queue Route(char dest){
+  private PacketsQueue route(char dest){
     int count=0;
     char chTemp='x';
     char NextN;
     boolean DestFound=false;
-    NextN=NextNode(dest);
-      for(count=0;count<MaxLinks;++count){
-        chTemp=qq[count].GetDest();
+    NextN=getNextNodeInRouting(dest);
+      for(count=0;count<maxLinks;++count){
+        chTemp=qq[count].getDest();
         if(chTemp==NextN){
           DestFound=true;
           break;
@@ -170,59 +153,59 @@ public class MyNode {
 
 
   }
-  public char GetNextNodeInRoute(char DD){
-    return(NextNode(DD));
+  public char getNextNodeInRoute(char DD){
+    return(getNextNodeInRouting(DD));
   }
-  private char NextNode(char dest){
+  private char getNextNodeInRouting(char dest){
     char ret;
-    ret=MyRTTable.GetNextNode(dest);
+    ret=myRoutingTable.getNextNode(dest);
     return(ret);
   }
-  public boolean AddPackGenerator(int StartT,int FinishT,char Dest,int Rate,int Length, int FID){
-    TempPG=new PacketGenerator(this,StartT,FinishT,Rate,Dest,Length,FID);
-    PG[PGenCount]=TempPG;
-    PGenCount++;
+  public boolean addPacketGenerator(int StartT,int FinishT,char Dest,int Rate,int Length, int FID){
+    tempPacketGenerator=new PacketGenerator(this,StartT,FinishT,Rate,Dest,Length,FID);
+    myPacketGenerator[packetGeneratorCount]=tempPacketGenerator;
+    packetGeneratorCount++;
     return(true);
   }
-  public boolean AddPackGenerator(int Length, int FID,char Dest){
-    TempPG=new PacketGenerator(this,0,32000,20,Dest,Length,FID);
-    PG[PGenCount]=TempPG;
-    PGenCount++;
+  public boolean addPacketGenerator(int Length, int FID,char Dest){
+    tempPacketGenerator=new PacketGenerator(this,0,32000,20,Dest,Length,FID);
+    myPacketGenerator[packetGeneratorCount]=tempPacketGenerator;
+    packetGeneratorCount++;
     return(true);
   }
-  public boolean AddPackGenerator(int StartT,int FinishT,int Rt,int FID){
-    TempPG=new PacketGenerator(this,StartT,FinishT,Rt,'Z',50,FID);
-    PG[PGenCount]=TempPG;
-    PGenCount++;
+  public boolean addPacketGenerator(int StartT,int FinishT,int Rt,int FID){
+    tempPacketGenerator=new PacketGenerator(this,StartT,FinishT,Rt,'Z',50,FID);
+    myPacketGenerator[packetGeneratorCount]=tempPacketGenerator;
+    packetGeneratorCount++;
     return(true);
   }
-  public int GetMyClock(){
-    return(Mnger.getClock());
+  public int getClock(){
+    return(Coordinator.getInstance().getClock());
   }
-  public void Notify(int cl){
+  public void notify(int cl){
     int count=0;
-    for(count=0;count<MaxLinks;++count)
+    for(count=0;count<maxLinks;++count)
       try{
         qq[count].notify(cl);
       }catch(RuntimeException r){
         //System.out.print("Queue Generation Error"+r+Integer.toString(count).toCharArray() +"\n" ) ;
       }
-    for(count=0;count<PGenCount;++count)
+    for(count=0;count<packetGeneratorCount;++count)
     try{
-        PG[count].notify(cl);
+        myPacketGenerator[count].notify(cl);
       }catch(RuntimeException r){
         //System.out.print("PacketGenerator Generation Error"+r+" "+Name+"  "+Integer.toString(count).toCharArray()+" "+Integer.toString(cl).toCharArray()+"\n") ;
       }
-    MyRTTable.hint();
+    myRoutingTable.hint();
 
   }
-  public StringBuffer GetQueuesStatus(){
+  public StringBuffer getQueuesStatus(){
     StringBuffer retVal=new StringBuffer("");
     int dropCnt=0,count=0;
     float AvgQL=0;
     char otherSide='x';
-    for(count=0;count<MaxLinks;++count){
-      otherSide=LL[count].getOtherHead(Name);
+    for(count=0;count<maxLinks;++count){
+      otherSide=links[count].getOtherHead(name);
 //      dropCnt=qq[count]
     };
     return(retVal);
@@ -233,7 +216,7 @@ private class PacketGenerator{
   MyNode owner;
   char dest;
   boolean status;
-  pack recent;
+  Packet recent;
   int flowID,serialN;
   int cdcounter;
   public PacketGenerator(MyNode O,int ST, int FT, int R,char D, int L,int FlowID){
@@ -268,9 +251,9 @@ private class PacketGenerator{
     DI=(int)(myRand.nextFloat()*10);
     clock=cl;
     //DI();
-    if(owner.GetDataLoc(DI)!=owner.Name){
-        recent=new pack(clock,owner.GetDataLoc(DI),owner.Name,plength,flowID,serialN,true,'Q',DI);
-        owner.Get(recent);
+    if(owner.getDataLocation(DI)!=owner.name){
+    	recent=new Packet(owner.name,owner.getDataLocation(DI),'Q',DI,plength,clock,flowID,serialN,true);
+        owner.recievePacket(recent);
         serialN++;
       }
     //System.out.print("Generated packet at "+Integer.toString(clock)+" in "+owner.Name);
@@ -278,28 +261,28 @@ private class PacketGenerator{
 
   }
 }
-private class Queue{
+private class PacketsQueue{
   MyLink ll;
   MyNode owner;
-  pack pps[]=new pack[20];
+  Packet pps[]=new Packet[20];
   int length;
   int dropCount;
-  public Queue(MyLink l,MyNode o){
+  public PacketsQueue(MyLink l,MyNode o){
     ll=l;
     owner=o;
     length=0;
     dropCount=0;
   }
-  public Queue(){
+  public PacketsQueue(){
     length=0;
     dropCount=0;
   }
-  public char GetDest(){
-    return(ll.getOtherHead(owner.Name));
+  public char getDest(){
+    return(ll.getOtherHead(owner.name));
   }
-  public void getPackage(pack ppp,int cl){
+  public void getPackage(Packet ppp,int cl){
     //System.out.println("Enqueued Packet in "+owner.Name+" for "+ppp.GetS()+" to "+ppp.GetD());
-    ppp.SetEnqueueTS(cl);
+    ppp.setEnqueueTimeStamp(cl);
     if(length>19){
       length=20;
       dropCount++;
@@ -331,29 +314,26 @@ private class Queue{
   char key[]=new char [10];
   char nextNode[]= new char [10];
   int cost[]=new int [10];
-  float AvgDel[]=new float [10];
+  float avgDel[]=new float [10];
   int updateFreq=10;
   int updateVar=0;
-  int NCount=0;
-  int MyIndex;
-  char MyName;
-  Coordinator Mng;
-  int RouteStyle;
-  public rtTable(Coordinator coor,char Owner,int RouteT){
-    Mng=coor;
-    MyName=Owner;
-    RouteStyle=RouteT;
+  int nCount=0;
+  int myIndex;
+  char myName;
+  int routeStyle;
+  public rtTable(char Owner,int RouteT){
+    myName=Owner;
+    routeStyle=RouteT;
     initTable();
   }
-  public rtTable(Coordinator coor,char Owner){
-    Mng=coor;
-    MyName=Owner;
-    RouteStyle=0;
+  public rtTable(char Owner){
+    myName=Owner;
+    routeStyle=0;
     initTable();
   }
   public void hint(){
     if(updateVar==0){
-      switch(RouteStyle){
+      switch(routeStyle){
         case(0):
           updateTableDijkstra();
         case(1):
@@ -370,10 +350,10 @@ private class Queue{
     }
   private void initTable(){
     int count=0;
-    NCount=Mng.getMaxNodeCount();
-    for(count=0;count<NCount;count++){
-      key[count]=Mng.getNodeName(count);
-      if(key[count]==MyName)MyIndex=count;
+    nCount=Coordinator.getInstance().getMaxNodeCount();
+    for(count=0;count<nCount;count++){
+      key[count]=Coordinator.getInstance().getNodeName(count);
+      if(key[count]==myName)myIndex=count;
       };
 
   }
@@ -382,30 +362,30 @@ private class Queue{
     boolean accessed[]=new boolean[10];
     int distances[]=new int [10];
     int lessC,lessI;
-    for(count=0;count<NCount;++count)
-      if(Mng.getNodeName(count)==MyName)MyIndex=count;
+    for(count=0;count<nCount;++count)
+      if(Coordinator.getInstance().getNodeName(count)==myName)myIndex=count;
 
     for(count=0;count<10;++count){
       accessed[count]=false;
       distances[count]=32000;
       };
-    accessed[MyIndex]=true;
-    for(count=0;count<NCount;++count){
+    accessed[myIndex]=true;
+    for(count=0;count<nCount;++count){
       cost[count]=32000;//Mng.GetLinkCost(MyIndex,count);
     };
-    cost[MyIndex]=0;
-    recent=MyIndex;
+    cost[myIndex]=0;
+    recent=myIndex;
     do{
-        for(count=0;count<NCount;++count){
-          if(cost[count]>(cost[recent]+Mng.getLinkCost(recent,count))){
-            cost[count]=cost[recent]+Mng.getLinkCost(recent,count);
-            if(recent==MyIndex)nextNode[count]=key[count];
+        for(count=0;count<nCount;++count){
+          if(cost[count]>(cost[recent]+Coordinator.getInstance().getLinkCost(recent,count))){
+            cost[count]=cost[recent]+Coordinator.getInstance().getLinkCost(recent,count);
+            if(recent==myIndex)nextNode[count]=key[count];
             else nextNode[count]=nextNode[recent];
             };
         };
         lessC=32001;
         lessI=0;
-        for(count=0;count<NCount;++count){
+        for(count=0;count<nCount;++count){
           if((cost[count]<lessC)&&!(accessed[count])){
             lessC=cost[count];
             lessI=count;
@@ -413,7 +393,7 @@ private class Queue{
         };
         recent=lessI;
         accessed[recent]=true;
-      }while(!(evaluateVector(accessed,NCount)));
+      }while(!(evaluateVector(accessed,nCount)));
   }
   private boolean evaluateVector(boolean in[],int m){
     boolean ret=false;
@@ -422,10 +402,10 @@ private class Queue{
     for(count=1;count<m;++count)ret=ret&&in[count];
     return(ret);
   }
-  public char GetNextNode(char dd){
+  public char getNextNode(char dd){
     int count=0;
     char RTret='x';
-    for(count=0;count<NCount;++count){
+    for(count=0;count<nCount;++count){
       if(key[count]==dd)RTret=nextNode[count];
       };
     return(RTret);

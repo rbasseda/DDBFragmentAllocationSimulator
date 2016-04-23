@@ -43,14 +43,14 @@ public class DataAlloc {
         if(D=='I')i=8;
         dCounter[DI][i]++;
         if(dCounter[DI][i]>10){
-          owner.MoveDataLoc(DI,D);
-          System.out.print(" Time: "+Integer.toString(owner.GetMyClock()));
-          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+owner.Name+" to "+D+"\n");
+          owner.moveDataLocation(DI,D);
+          System.out.print(" Time: "+Integer.toString(owner.getClock()));
+          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+owner.name+" to "+D+"\n");
           dCounter[DI][i]=0;
           }
         break;
         case 'R':
-        NextN=owner.GetNextNodeInRoute(D);
+        NextN=owner.getNextNodeInRoute(D);
         if(NextN=='A')i=0;
         if(NextN=='B')i=1;
         if(NextN=='C')i=2;
@@ -67,9 +67,9 @@ public class DataAlloc {
           }
         if(dCounter[DI][i]>5){
         //if(DCounter[DI][i]>(2*(Commolative/(100-zero)))&&DCounter[DI][i]>10){
-          owner.MoveDataLoc(DI,NextN);
-          System.out.print(" Time: "+Integer.toString(owner.GetMyClock()));
-          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+owner.Name+" to "+NextN+"\n");
+          owner.moveDataLocation(DI,NextN);
+          System.out.print(" Time: "+Integer.toString(owner.getClock()));
+          System.out.print(" Migrate Data "+Integer.toString(DI)+" from "+owner.name+" to "+NextN+"\n");
           dCounter[DI][i]=0;
           }
         break;

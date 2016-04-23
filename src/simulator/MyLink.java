@@ -18,7 +18,7 @@ public class MyLink{
   private  int clock,pclock,rclock,direction,countQDel,oaCountQDel;
   private  float avgQDel;
   private  float oaAvgQDel;
-  private  pack ponl;
+  private  Packet ponl;
   private  Coordinator coord;
   private  int idleCount,tIdleCount;
   public MyLink(MyNode h1, MyNode h2,int bw,int del, Coordinator co){
@@ -46,17 +46,17 @@ public class MyLink{
     tIdleCount=0;
     busy=false;
     }
-  public boolean getPackage(pack p,MyNode Head){
+  public boolean getPackage(Packet p,MyNode Head){
     int pl=0;
     clock=coord.getClock();
     if(pclock<=(clock-1)){
-      pl=p.GetL();
+      pl=p.getLength();
       rclock=clock+(int)(pl/bandwidth)+1;
       pclock=clock+(int)(pl/bandwidth)+delay+1;
-      ponl=new pack();
+      ponl=new Packet();
       ponl=p;
       busy=true;
-      if(Head.Name==head1.Name){
+      if(Head.name==head1.name){
         direction=1;
         //System.out.print("Packet is putted on Link between "+H1.Name+" to "+H2.Name);
         //System.out.print(" for transmitting "+p.GetS()+" to "+p.GetD());
@@ -114,29 +114,29 @@ public class MyLink{
     return(temp);
   }
   private void put(){
-    avgQDel=(float)(avgQDel*countQDel+ponl.CalcEnqDelay(clock))/(countQDel +1);
-    oaAvgQDel=(float)(oaAvgQDel*oaCountQDel+ponl.CalcEnqDelay(clock))/(oaCountQDel +1);
+    avgQDel=(float)(avgQDel*countQDel+ponl.calculateEnqueueDelay(clock))/(countQDel +1);
+    oaAvgQDel=(float)(oaAvgQDel*oaCountQDel+ponl.calculateEnqueueDelay(clock))/(oaCountQDel +1);
     countQDel++;
     oaCountQDel++;
     if(direction==1){
-      head2.Get(ponl);
+      head2.recievePacket(ponl);
       //System.out.println("Link Between: "+H1.Name+" to "+H2.Name+" for "+ponl.GetS()+" to "+ponl.GetD());
       }
     else {
-      head1.Get(ponl);
+      head1.recievePacket(ponl);
       //System.out.println("Link Between: "+H2.Name+" to "+H1.Name+" for "+ponl.GetS()+" to "+ponl.GetD());
       };
 
     }
   public char getHead1(){
-    return(head1.Name);
+    return(head1.name);
   }
   public char getHead2(){
-    return(head2.Name);
+    return(head2.name);
   }
   public char getOtherHead(char oneHead){
-    if(head1.Name==oneHead)return(head2.Name);
-    if(head2.Name==oneHead)return(head1.Name);
+    if(head1.name==oneHead)return(head2.name);
+    if(head2.name==oneHead)return(head1.name);
     return('0');
   }
   public float getLinkDelay(){

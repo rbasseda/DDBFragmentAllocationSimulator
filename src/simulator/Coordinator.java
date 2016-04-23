@@ -31,8 +31,11 @@ public class Coordinator {
     private int routeType;
     private int[] dropFlow=new int[20];
     private int flowCnt;
-    private char allocT='Q';
-  public Coordinator() {
+    private char allocT;
+    
+    private static Coordinator instance = null;
+    
+  protected Coordinator() {
     int i,j;
     for(i=0;i<10;++i){
       for(j=0;j<10;++j){
@@ -48,63 +51,19 @@ public class Coordinator {
     simLength=100;
     matrixUT=matrixUF;
     routeType=0;
-    flowCnt=0;
-  }
-  public Coordinator(int SimL, int RouteT) {
-    int i,j;
-    for(i=0;i<10;++i){
-      for(j=0;j<10;++j){
-          linkDelay[i][j]=0;
-          linkBW[i][j]=1;
-          linkPropagDel[i][j]=32001;
-          linkCost[i][j]=32001;
-        };
-      nodeNames[i]='\0';
-      };
-    nodeCount=0;
-    linkCount=0;
-    simLength=SimL;
-    matrixUT=matrixUF;
-    routeType=RouteT;
-    flowCnt=0;
-  }
-  public Coordinator(int SimL, int RouteT,char AllT) {
-    int i,j;
-    for(i=0;i<10;++i){
-      for(j=0;j<10;++j){
-          linkDelay[i][j]=0;
-          linkBW[i][j]=1;
-          linkPropagDel[i][j]=32001;
-          linkCost[i][j]=32001;
-        };
-      nodeNames[i]='\0';
-      };
-    nodeCount=0;
-    linkCount=0;
-    simLength=SimL;
-    matrixUT=matrixUF;
-    routeType=RouteT;
-    allocT=AllT;
+    allocT='Q';
     flowCnt=0;
   }
 
-  public Coordinator(int SimL) {
-    int i,j;
-    for(i=0;i<10;++i){
-      for(j=0;j<10;++j){
-          linkDelay[i][j]=0;
-          linkBW[i][j]=1;
-          linkPropagDel[i][j]=32001;
-          linkCost[i][j]=32001;
-        };
-      nodeNames[i]='\0';
-      };
-    nodeCount=0;
-    linkCount=0;
-    simLength=SimL;
-    matrixUT=matrixUF;
-    routeType=0;
-  }
+
+  public static Coordinator getInstance(){
+      if(instance == null) {
+          instance = new Coordinator();
+       }
+       return instance;
+    }  
+ 
+
   public int getClock(){
     return(clock);
     }
@@ -117,7 +76,7 @@ public class Coordinator {
       try{
         temp=new MyNode();
         nodes[count]=temp;
-        nodes[count].SetParam(nodeNames[count],(Coordinator)this,routeType,allocT);
+        nodes[count].setParam(nodeNames[count],routeType,allocT);
       }catch (RuntimeException r){
         System.out.println("RunTime Exception Creation On My Node "+ r);
       };
@@ -127,7 +86,7 @@ public class Coordinator {
     //Sequencer
     for(clock=0;clock<simLength;++clock){
       for(count=0;count<nodeCount;++count)
-        nodes[count].Notify(clock);
+        nodes[count].notify(clock);
       for(count=0;count<linkCount;++count)
         links[count].notify(clock);
       changeCostSenario1(clock);
@@ -151,53 +110,53 @@ public class Coordinator {
     return(nodeCount);
   }
     private void senario2(int RateF){
-    nodes[0].AddPackGenerator(2,700,'I',10+RateF,100,1);
-    nodes[3].AddPackGenerator(3,3000,'G',5,100+RateF,2);
+    nodes[0].addPacketGenerator(2,700,'I',10+RateF,100,1);
+    nodes[3].addPacketGenerator(3,3000,'G',5,100+RateF,2);
     flowCnt=2;
   }
   private void senario1(int RateF){
-    nodes[0].AddPackGenerator(500,1000,'B',5+RateF,150,1);
-    nodes[0].AddPackGenerator(5000,70000,'B',5+RateF,150,2);
-    nodes[0].AddPackGenerator(5000,70000,'D',5+RateF,150,3);
-    nodes[1].AddPackGenerator(150,20000,'F',10+RateF,150,4);
-    nodes[2].AddPackGenerator(100,40000,'H',5+RateF,100,5);
-    nodes[3].AddPackGenerator(150,30000,'G',10+RateF,200,6);
-    nodes[4].AddPackGenerator(1500,3000,'G',10+RateF,200,7);
-    nodes[7].AddPackGenerator(500,900,'B',15+RateF,300,8);
-    nodes[8].AddPackGenerator(1000,4000,'C',10+RateF,300,9);
-    nodes[8].AddPackGenerator(2000,3000,'A',10+RateF,200,10);
-    nodes[3].AddPackGenerator(3000,3500,'I',20+RateF,300,11);
-    nodes[6].AddPackGenerator(1000,4000,'E',30+RateF,300,12);
+    nodes[0].addPacketGenerator(500,1000,'B',5+RateF,150,1);
+    nodes[0].addPacketGenerator(5000,70000,'B',5+RateF,150,2);
+    nodes[0].addPacketGenerator(5000,70000,'D',5+RateF,150,3);
+    nodes[1].addPacketGenerator(150,20000,'F',10+RateF,150,4);
+    nodes[2].addPacketGenerator(100,40000,'H',5+RateF,100,5);
+    nodes[3].addPacketGenerator(150,30000,'G',10+RateF,200,6);
+    nodes[4].addPacketGenerator(1500,3000,'G',10+RateF,200,7);
+    nodes[7].addPacketGenerator(500,900,'B',15+RateF,300,8);
+    nodes[8].addPacketGenerator(1000,4000,'C',10+RateF,300,9);
+    nodes[8].addPacketGenerator(2000,3000,'A',10+RateF,200,10);
+    nodes[3].addPacketGenerator(3000,3500,'I',20+RateF,300,11);
+    nodes[6].addPacketGenerator(1000,4000,'E',30+RateF,300,12);
     flowCnt=12;
   }
 
   private void senario2(){
-    nodes[0].AddPackGenerator(2,700,'I',1,100,1);
-    nodes[3].AddPackGenerator(3,3000,'G',5,100,4);
+    nodes[0].addPacketGenerator(2,700,'I',1,100,1);
+    nodes[3].addPacketGenerator(3,3000,'G',5,100,4);
     flowCnt=2;
   }
   private void senario1(){
-    nodes[0].AddPackGenerator(500,1000,'B',5,150,1);
-    nodes[0].AddPackGenerator(5000,70000,'B',5,150,1);
-    nodes[0].AddPackGenerator(5000,70000,'D',5,150,1);
-    nodes[1].AddPackGenerator(150,20000,'F',10,150,2);
-    nodes[2].AddPackGenerator(100,40000,'H',5,100,3);
-    nodes[3].AddPackGenerator(150,30000,'G',10,200,4);
-    nodes[4].AddPackGenerator(1500,3000,'G',10,2000,4);
-    nodes[8].AddPackGenerator(500,900,'B',15,300,5);
-    nodes[8].AddPackGenerator(1000,4000,'C',10,300,5);
+    nodes[0].addPacketGenerator(500,1000,'B',5,150,1);
+    nodes[0].addPacketGenerator(5000,70000,'B',5,150,1);
+    nodes[0].addPacketGenerator(5000,70000,'D',5,150,1);
+    nodes[1].addPacketGenerator(150,20000,'F',10,150,2);
+    nodes[2].addPacketGenerator(100,40000,'H',5,100,3);
+    nodes[3].addPacketGenerator(150,30000,'G',10,200,4);
+    nodes[4].addPacketGenerator(1500,3000,'G',10,2000,4);
+    nodes[8].addPacketGenerator(500,900,'B',15,300,5);
+    nodes[8].addPacketGenerator(1000,4000,'C',10,300,5);
     flowCnt=9;
   }
   private void senarioSimpleTest1(){
-    nodes[0].AddPackGenerator(0,10000,100,1);
-    nodes[8].AddPackGenerator(20000,100000,100,1);
+    nodes[0].addPacketGenerator(0,10000,100,1);
+    nodes[8].addPacketGenerator(20000,100000,100,1);
     flowCnt=2;
   }
   private void senarioSimpleTest2(){
-    nodes[0].AddPackGenerator(0,60000,100,1);
-    nodes[2].AddPackGenerator(0,60000,50,1);
-    nodes[3].AddPackGenerator(0,60000,50,1);
-    nodes[7].AddPackGenerator(0,60000,50,1);
+    nodes[0].addPacketGenerator(0,60000,100,1);
+    nodes[2].addPacketGenerator(0,60000,50,1);
+    nodes[3].addPacketGenerator(0,60000,50,1);
+    nodes[7].addPacketGenerator(0,60000,50,1);
     //Nodes[8].AddPackGenerator(20000,100000,100,1);
     flowCnt=4;
   }
@@ -229,9 +188,9 @@ public class Coordinator {
     for(count=1;count<=flowCnt;++count)
       TDrop=TDrop+dropFlow[count];
     for(count=0;count<nodeCount;++count)
-      TRPCount=TRPCount+nodes[count].GetRecievedPackCount();
+      TRPCount=TRPCount+nodes[count].getRecievedPackCount();
     for(count=0;count<nodeCount;++count)
-      TAvgQN=TAvgQN+nodes[count].GetAvgDelay();
+      TAvgQN=TAvgQN+nodes[count].getAvgDelay();
     TAvgQNV=TAvgQN/nodeCount;
     for(count=0;count<linkCount;++count)
       TAvgQL=TAvgQL+links[count].getOverALinkDelay();
@@ -358,10 +317,10 @@ public class Coordinator {
     if(myMapping.GetMoving(DI)==false){
         myMapping.SetMovin(DI);
         SourceOfData=myMapping.GetLoc(DI);
-        pack recent=new pack(clock,DestOfData,SourceOfData,DataLength,100,dataPacketSN,true,'D',DI);
+        Packet recent=new Packet(SourceOfData,DestOfData,'D',DI,DataLength,clock,100,dataPacketSN,true);        
         for(count=0;count<nodeCount;++count)
-          if(nodes[count].Name==SourceOfData){
-            nodes[count].Get(recent);
+          if(nodes[count].name==SourceOfData){
+            nodes[count].recievePacket(recent);
             break;
           }
         dataPacketSN++;
@@ -382,7 +341,7 @@ public class Coordinator {
     int count=0;
     for(count=0;count<nodeCount;++count)
       try{
-      nodes[count].SetParam(nodeNames[count],this,routeType,allocT);
+      nodes[count].setParam(nodeNames[count],routeType,allocT);
       }catch(RuntimeException r){
         System.out.println("RunTime Exception PPPPP "+ r);
       };
@@ -424,8 +383,8 @@ public class Coordinator {
       statusValue.append("Null Value");
       } else {
         statusValue.append(" NodeName  "+nodeNames[index]+" ");
-        AGD=nodes[index].GetAvgDelay();
-        RPCount=nodes[index].GetRecievedPackCount();
+        AGD=nodes[index].getAvgDelay();
+        RPCount=nodes[index].getRecievedPackCount();
         statusValue.append("Average Delay:"+Float.toString(AGD));
         statusValue.append("  Recieved Packet Count:"+Integer.toString(RPCount));
       };
@@ -491,4 +450,27 @@ public class Coordinator {
     }
 
   }
+public void setSimLength(int simLength) {
+	this.simLength = simLength;
+}
+
+
+public char getAllocT() {
+	return allocT;
+}
+
+
+public void setAllocT(char allocT) {
+	this.allocT = allocT;
+}
+
+
+public int getRouteType() {
+	return routeType;
+}
+
+
+public void setRouteType(int routeType) {
+	this.routeType = routeType;
+}
 }
